@@ -1,0 +1,78 @@
+import uuid
+import face_recognition
+import cv2
+import os
+from cvzone.FaceDetectionModule import FaceDetector
+from interface import ResponsiveScreen
+
+
+def popup():
+    # Create an instance of the ResponsiveScreen class
+    app = ResponsiveScreen()
+    app.mainloop()  # Start the Tkinter main event loop
+
+
+detector = FaceDetector()
+video = cv2.VideoCapture(0)
+
+
+anchor_folder = 'data/anchor/'
+anchor_images = []
+for filename in os.listdir(anchor_folder):
+    img_path = os.path.join(anchor_folder, filename)
+    if os.path.isfile(img_path):
+        if any(filename.lower().endswith(ext) for ext in ('.jpg', '.jpeg', '.png')):
+            anchor_images.append(img_path)
+
+storage_folder = 'storage'
+storage_images = []
+for filename_storage in os.listdir(storage_folder):
+    img_path_storage = os.path.join(storage_folder, filename_storage)
+    if os.path.isfile(img_path_storage):
+        if any(filename_storage.lower().endswith(ext) for ext in ('.jpg', '.jpeg', '.png')):
+            storage_images.append(img_path_storage)
+
+
+while True:
+    _, img = video.read()
+
+    face_locations = face_recognition.face_locations(img)
+
+    if face_locations:
+
+        top, right, bottom, left = face_locations[0]
+        cropped_face = img[top:bottom, left:right]
+
+        imgname = os.path.join('storage', '{}.jpg'.format(uuid.uuid1()))
+        cv2.imwrite(imgname, cropped_face)
+        print("Imagem salva:", imgname)
+
+        unknown_image = face_recognition.load_image_file(imgname)
+        unknown_encoding = face_recognition.face_encodings(unknown_image)[0]
+
+        for image_way in anchor_images:
+            anchor_image = face_recognition.load_image_file(image_way)
+            anchor_encoding = face_recognition.face_encodings(anchor_image)[0]
+
+            funcionapfvr = face_recognition.compare_faces([anchor_encoding], unknown_encoding, tolerance=0.6)
+
+    else:
+
+        for element in funcionapfvr:
+            if element == True:
+                for i in anchor_folder:
+                    img, bboxes = detector.findFaces()
+
+#Bruno do futuro PORFAVOR mantem essa lógica aqui que eu estou morrendo de sono
+# Usa a verificação da linha 61 a 64 para fazer com que o loop seja continuo e não tire trilhoes de print
+# Se não essa bomba vai explodir
+# Ou pensa em outra coisa(jeito mais facil), tipo se o rosto ja existe você não tira mais foto
+# E arruma esse código feio que ta igual a sua cara, obrigado :)
+
+    cv2.imshow("Result", img)
+
+    if cv2.waitKey(1) == 27:
+        break
+
+video.release()
+cv2.destroyAllWindows()
