@@ -3,6 +3,8 @@ from cvzone.FaceDetectionModule import FaceDetector
 import face_recognition
 import os
 
+#*Popup funtion is here*
+
 detector = FaceDetector()
 video = cv2.VideoCapture(0)
 
@@ -39,7 +41,7 @@ while True:
                 # Extract face encoding for the current face
                 face_encoding = face_recognition.face_encodings(img, [(top, right, bottom, left)])[0]
 
-                # Set default name as "Unknown"
+                # Set defaut name as "Unknown"
                 name = "Unknown"
 
                 # Check for matches with anchor encodings
